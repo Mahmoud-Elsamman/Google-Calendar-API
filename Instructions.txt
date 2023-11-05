@@ -1,0 +1,8 @@
+1- Clone or Download the API from Github
+2- Install the required packages using Nuget
+3- Add the "ClientId" and "ClientSecret" in the GoogleApiSettings object in the appsettings.json folder
+4- Run the application in the development mode using "dotnet run" or "dotnet watch run"
+5- Head to http://localhost:5187/swagger to see the full documentation of the API
+
+Note: for development purposes the google Oauth authentication will not work with your google account unless
+I add it explicitly in the google developer console. 

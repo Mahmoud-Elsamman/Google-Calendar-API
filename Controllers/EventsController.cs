@@ -79,7 +79,7 @@ namespace GoogleCalendarAPI.Controllers
         {
             ServiceResponse<string> response = await _eventsService.DeleteEvent(id);
 
-            if (response.Data == null)
+            if (response.Success == false)
             {
                 return NotFound(response);
             }

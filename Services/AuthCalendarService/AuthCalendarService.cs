@@ -13,13 +13,30 @@ namespace GoogleCalendarAPI.Services.AuthCalendarService
     public class AuthCalendarService : IAuthCalendarService
     {
         private readonly GoogleApiSettings _settings;
+        private UserCredential? _userCredential;
+
 
         public AuthCalendarService(IOptions<GoogleApiSettings> settings)
         {
             _settings = settings.Value;
         }
 
-        public async Task<CalendarService> CreateCalendarService()
+
+        private async Task<UserCredential> GetUserCredential()
+        {
+            if (_userCredential == null)
+            {
+                _userCredential = await AuthorizeUserAsync();
+            }
+            else if (_userCredential.Token.ExpiresInSeconds < 60)
+            {
+                _userCredential = await RefreshAccessToken(_userCredential);
+            }
+
+            return _userCredential;
+        }
+
+        private async Task<UserCredential> AuthorizeUserAsync()
         {
             UserCredential credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 new ClientSecrets
@@ -32,9 +49,27 @@ namespace GoogleCalendarAPI.Services.AuthCalendarService
                 CancellationToken.None
             );
 
+            return credential;
+
+        }
+
+
+
+        private static async Task<UserCredential> RefreshAccessToken(UserCredential userCredential)
+        {
+            await userCredential.RefreshTokenAsync(CancellationToken.None);
+
+            return userCredential;
+        }
+
+        public async Task<CalendarService> CreateCalendarService()
+        {
+
+            UserCredential userCredential = await GetUserCredential();
+
             CalendarService service = new CalendarService(new BaseClientService.Initializer
             {
-                HttpClientInitializer = credential,
+                HttpClientInitializer = userCredential,
                 ApplicationName = "Calendar API"
             });
 
